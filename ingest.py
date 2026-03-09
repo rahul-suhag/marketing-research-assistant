@@ -1,8 +1,8 @@
 """
-ingest.py — Build a FAISS vector index from PDFs and text files.
+ingest.py — Build a FAISS vector index from PDFs, PPTX slides, and text files.
 
 Reads from:  data/slides/  and  data/marketing_books/
-Supports:    .pdf, .txt, .md
+Supports:    .pdf, .pptx, .txt, .md
 
 Usage:
     python ingest.py
@@ -12,8 +12,60 @@ from pathlib import Path
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+
+
+# ── PPTX extraction helpers ─────────────────────────────────────────────────
+
+def _extract_text_from_shape(shape) -> list:
+    """Recursively extract text from a PPTX shape, including groups and tables."""
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+    texts = []
+    if shape.has_text_frame:
+        for para in shape.text_frame.paragraphs:
+            t = para.text.strip()
+            if t:
+                texts.append(t)
+    if shape.has_table:
+        for row in shape.table.rows:
+            row_text = " | ".join(
+                cell.text.strip() for cell in row.cells if cell.text.strip()
+            )
+            if row_text:
+                texts.append(row_text)
+    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+        for child in shape.shapes:
+            texts.extend(_extract_text_from_shape(child))
+    return texts
+
+
+def load_pptx(pptx_path: Path) -> list:
+    """Extract text from a .pptx file, one Document per slide."""
+    from pptx import Presentation
+
+    prs = Presentation(str(pptx_path))
+    session_name = pptx_path.stem.replace("_", " ").replace("2026", "").strip()
+
+    docs = []
+    for slide_num, slide in enumerate(prs.slides, start=1):
+        texts = []
+        for shape in slide.shapes:
+            texts.extend(_extract_text_from_shape(shape))
+        if texts:
+            header = f"[{session_name} — Slide {slide_num}]"
+            content = header + "\n" + "\n".join(texts)
+            docs.append(Document(
+                page_content=content,
+                metadata={
+                    "source": pptx_path.name,
+                    "page": slide_num - 1,
+                    "source_category": "slides",
+                },
+            ))
+    return docs
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
@@ -42,6 +94,12 @@ def load_documents_from_directory(directory: Path) -> list:
         docs = loader.load()
         for doc in docs:
             doc.metadata["source_category"] = source_tag
+        documents.extend(docs)
+
+    # Load PPTX files
+    for pptx_path in sorted(directory.glob("*.pptx")):
+        print(f"  Loading PPTX: {pptx_path.name}")
+        docs = load_pptx(pptx_path)
         documents.extend(docs)
 
     # Load text files (.txt and .md)

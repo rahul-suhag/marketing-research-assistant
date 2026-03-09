@@ -7,5 +7,6 @@ langgraph
 faiss-cpu
 sentence-transformers
 pypdf
+python-pptx
 pandas
 tabulate

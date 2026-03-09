@@ -1,11 +1,8 @@
 """
 app.py — Streamlit UI for the Marketing Research Multi-Agent Assistant.
 
-Features:
-  • Chat-based Q&A grounded in course slides & textbooks (RAG).
-  • CSV upload for Qualtrics data cleaning and analysis.
-  • Download button for processed data.
-  • Full chat history maintained in session state.
+MKTG 323 · Mays Business School · Texas A&M University
+Professor Rahul Suhag
 """
 
 import streamlit as st
@@ -20,12 +17,65 @@ from agents import build_graph, AgentState, EMBEDDING_MODEL, RateLimitError
 # ── Page config ──────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="Marketing Research Assistant",
-    page_icon="📊",
+    page_title="MKTG 323 · Research Assistant",
+    page_icon="🏛️",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 FAISS_INDEX_DIR = Path("faiss_index")
+
+# ── Custom CSS ───────────────────────────────────────────────────────────────
+
+st.markdown("""
+<style>
+/* ── Typography ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+[data-testid="stAppViewContainer"] { font-family: 'Inter', sans-serif; }
+
+/* ── Feature card styling ───────────────────── */
+.feature-card {
+    background: white;
+    border: 1px solid #e0d6d0;
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 4px rgba(80,0,0,0.06);
+    height: 100%;
+}
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(80,0,0,0.12);
+    border-color: #500000;
+}
+.feature-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+.feature-title { font-size: 0.95rem; font-weight: 600; color: #333; margin-bottom: 0.3rem; }
+.feature-desc { font-size: 0.8rem; color: #666; line-height: 1.5; }
+
+/* ── Chat styling ───────────────────────────── */
+[data-testid="stChatMessage"] { border-radius: 12px; }
+
+/* ── Footer ─────────────────────────────────── */
+.footer {
+    text-align: center;
+    padding: 1.5rem 0 0.5rem 0;
+    font-size: 0.75rem;
+    color: #999;
+    border-top: 1px solid #eee;
+    margin-top: 2rem;
+}
+.footer a { color: #500000; text-decoration: none; font-weight: 500; }
+
+/* ── Sidebar ────────────────────────────────── */
+[data-testid="stSidebar"] { background: #faf8f6; }
+
+/* ── Hide default Streamlit elements ────────── */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
 
 # ── Session state defaults ───────────────────────────────────────────────────
 
@@ -39,23 +89,17 @@ if "processed_csv" not in st.session_state:
     st.session_state.processed_csv = None
 
 
+# ── API key (from secrets only — never shown in UI) ─────────────────────────
+
+api_key = st.secrets.get("GROQ_API_KEY", "")
+
+
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.header("Settings")
-    # Pre-fill from secrets if available (for Streamlit Cloud deployment)
-    default_key = st.secrets.get("GROQ_API_KEY", "") if hasattr(st, "secrets") else ""
-    api_key = st.text_input(
-        "Groq API Key",
-        value=default_key,
-        type="password",
-        help="Get a free key at https://console.groq.com/keys",
-    )
-
-    st.divider()
-    st.header("Upload Qualtrics CSV")
+    st.markdown("### 📂 Data Upload")
     uploaded_csv = st.file_uploader(
-        "Upload a CSV file for data analysis",
+        "Upload your Qualtrics CSV",
         type=["csv"],
         help="Upload your Qualtrics survey export (.csv) to clean, recode, or analyze it.",
     )
@@ -64,21 +108,18 @@ with st.sidebar:
         st.session_state.csv_data = uploaded_csv.getvalue().decode("utf-8")
         st.session_state.csv_filename = uploaded_csv.name
         st.success(f"Loaded: {uploaded_csv.name}")
-
-        # Show a quick preview
         try:
             preview_df = pd.read_csv(uploaded_csv)
             st.dataframe(preview_df.head(), use_container_width=True)
         except Exception:
             pass
 
-    if st.session_state.csv_data and st.button("Clear CSV"):
+    if st.session_state.csv_data and st.button("Remove CSV"):
         st.session_state.csv_data = None
         st.session_state.csv_filename = None
         st.session_state.processed_csv = None
         st.rerun()
 
-    # Download processed CSV
     if st.session_state.processed_csv:
         st.divider()
         st.download_button(
@@ -89,9 +130,12 @@ with st.sidebar:
         )
 
     st.divider()
-    if st.button("Clear Chat History"):
+    if st.button("Clear Chat"):
         st.session_state.messages = []
         st.rerun()
+
+    st.divider()
+    st.caption("Powered by Llama 3.3 70B · FAISS · LangGraph")
 
 
 # ── Load FAISS index ─────────────────────────────────────────────────────────
@@ -109,29 +153,95 @@ def load_vectorstore():
         str(FAISS_INDEX_DIR), embeddings, allow_dangerous_deserialization=True
     )
 
-
 vectorstore = load_vectorstore()
 
-# ── Main UI ──────────────────────────────────────────────────────────────────
 
-st.title("📊 Marketing Research Assistant")
-st.caption(
-    "Ask about marketing research concepts, get Excel how-to guidance, "
-    "or upload a Qualtrics CSV for data cleaning and analysis."
-)
+# ── Header ───────────────────────────────────────────────────────────────────
+
+# Maroon banner using native Streamlit container
+banner = st.container()
+with banner:
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(135deg, #500000 0%, #6e2020 50%, #8C2318 100%);
+            padding: 2rem 2.5rem;
+            border-radius: 16px;
+            color: white;
+            margin-bottom: 1.5rem;
+        ">
+            <div style="font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.2rem;">
+                🏛️ MKTG 323 · Marketing Research Assistant
+            </div>
+            <div style="font-size: 1rem; font-weight: 300; opacity: 0.9; margin-bottom: 0.4rem;">
+                AI-Powered Study Companion for Data Analysis &amp; Research Methods
+            </div>
+            <div style="font-size: 0.82rem; opacity: 0.7;">
+                Professor Rahul Suhag · Mays Business School · Texas A&amp;M University
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ── Feature cards (only on empty chat) ───────────────────────────────────────
+
+if not st.session_state.messages:
+    col1, col2, col3 = st.columns(3, gap="medium")
+
+    with col1:
+        st.markdown(
+            '<div class="feature-card">'
+            '<div class="feature-icon">📖</div>'
+            '<div class="feature-title">Research Concepts</div>'
+            '<div class="feature-desc">Scale types, sampling methods, survey design, and MRP analysis guidance</div>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    with col2:
+        st.markdown(
+            '<div class="feature-card">'
+            '<div class="feature-icon">📊</div>'
+            '<div class="feature-title">Excel &amp; ToolPak</div>'
+            '<div class="feature-desc">Step-by-step instructions for descriptive stats, t-tests, ANOVA, chi-square &mdash; Mac &amp; Windows</div>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    with col3:
+        st.markdown(
+            '<div class="feature-card">'
+            '<div class="feature-icon">🧹</div>'
+            '<div class="feature-title">Data Cleaning</div>'
+            '<div class="feature-desc">Upload your Qualtrics CSV for guided cleaning, recoding, and analysis</div>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("")  # spacer
+    st.markdown(
+        '<p style="text-align:center; color:#888; font-size:0.85rem;">'
+        "Ask a question below or open the sidebar to upload a CSV."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+
+
+# ── Guard: API key ───────────────────────────────────────────────────────────
 
 if not api_key:
-    st.info(
-        "Enter your **Groq API key** in the sidebar to get started. "
-        "Get a free key at [console.groq.com/keys](https://console.groq.com/keys)."
+    st.error(
+        "The assistant is not configured yet. "
+        "Please contact Professor Suhag if you see this message."
     )
     st.stop()
 
 if vectorstore is None:
     st.warning(
-        "No FAISS index found. Run `python ingest.py` first to build the knowledge base "
-        "from your PDFs in `data/slides/` and `data/marketing_books/`.\n\n"
-        "You can still use the **Data Analysis** features by uploading a CSV."
+        "Knowledge base is loading or unavailable. "
+        "You can still upload a CSV for data analysis."
     )
 
 # ── Render chat history ─────────────────────────────────────────────────────
@@ -142,13 +252,11 @@ for msg in st.session_state.messages:
 
 # ── Chat input ───────────────────────────────────────────────────────────────
 
-if prompt := st.chat_input("Ask a question or describe a data task …"):
-    # Display user message
+if prompt := st.chat_input("Ask about research methods, scale types, Excel analysis, or describe a data task …"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Build and invoke graph
     with st.chat_message("assistant"):
         with st.spinner("Thinking …"):
             graph = build_graph(api_key, vectorstore)
@@ -170,7 +278,6 @@ if prompt := st.chat_input("Ask a question or describe a data task …"):
                 result = graph.invoke(initial_state)
                 answer = result.get("final_answer", "I wasn't able to generate a response.")
 
-                # If the data analyst produced new CSV data, save for download
                 if result.get("route") == "data_analysis" and result.get("csv_data"):
                     st.session_state.processed_csv = result["csv_data"]
                     st.session_state.csv_data = result["csv_data"]
@@ -186,3 +293,15 @@ if prompt := st.chat_input("Ask a question or describe a data task …"):
         st.markdown(answer)
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
+
+# ── Footer ───────────────────────────────────────────────────────────────────
+
+st.markdown(
+    '<div class="footer">'
+    "MKTG 323 · Marketing Research · "
+    '<a href="https://mays.tamu.edu" target="_blank">Mays Business School</a>'
+    " · Texas A&amp;M University<br>"
+    "Built by Professor Rahul Suhag · Powered by open-source AI"
+    "</div>",
+    unsafe_allow_html=True,
+)

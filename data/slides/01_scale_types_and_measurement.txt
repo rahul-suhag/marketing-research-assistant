@@ -1,0 +1,235 @@
+MARKETING RESEARCH: SCALE TYPES AND MEASUREMENT LEVELS
+=======================================================
+
+1. NOMINAL SCALE
+-----------------
+Definition: A nominal scale classifies data into distinct categories with no inherent order or ranking. Categories are mutually exclusive and collectively exhaustive.
+
+Examples in Marketing Research:
+- Gender (Male, Female, Non-binary, Prefer not to say)
+- Brand preference (Nike, Adidas, Puma, Under Armour)
+- Geographic region (North, South, East, West)
+- Purchase channel (Online, In-store, Mobile app)
+- Yes/No questions (Did you purchase in the last 30 days? Yes/No)
+- Occupation categories
+- Marital status
+
+Properties:
+- Categories have no mathematical relationship
+- Cannot calculate mean or median meaningfully
+- Can only count frequencies
+
+How to Clean Nominal Data in Qualtrics Exports:
+- Check for inconsistent spellings (e.g., "male" vs "Male" vs "MALE")
+- Standardize category labels to a consistent format
+- Identify and handle "Other" responses
+- Remove or recode blank/missing responses
+- Binary coding: Convert Yes/No to 1/0 using Excel IF function or pandas .map()
+
+Binary Coding for Nominal Variables:
+- For Yes/No: =IF(A2="Yes",1,0)
+- For Gender dummy coding: Create separate columns for each category
+  - Male: =IF(A2="Male",1,0)
+  - Female: =IF(A2="Female",1,0)
+  - One category must be omitted as the reference category in regression
+
+Appropriate Statistical Analyses for Nominal Data:
+- Frequency distribution (counts and percentages)
+- Mode (most frequent category)
+- Chi-square test of independence (to test association between two nominal variables)
+- Cross-tabulation (contingency tables)
+- Cramer's V (measure of association strength)
+- Binomial test (for binary nominal variables)
+- Lambda (measure of proportional reduction in error)
+
+NOT Appropriate for Nominal Data:
+- Mean, median
+- Standard deviation
+- Correlation
+- t-test
+- ANOVA
+- Regression (unless dummy coded)
+
+
+2. ORDINAL SCALE
+-----------------
+Definition: An ordinal scale classifies data into categories that have a meaningful order or ranking, but the intervals between categories are not necessarily equal.
+
+Examples in Marketing Research:
+- Likert scales (Strongly Disagree, Disagree, Neutral, Agree, Strongly Agree)
+- Satisfaction ratings (Very Dissatisfied to Very Satisfied)
+- Education level (High School, Bachelor's, Master's, PhD)
+- Income brackets (Under $25K, $25K-$50K, $50K-$75K, $75K+)
+- Purchase frequency (Never, Rarely, Sometimes, Often, Always)
+- Net Promoter Score categories (Detractor, Passive, Promoter)
+- Ranking questions (Rank your top 3 preferred brands)
+
+Properties:
+- Categories have a meaningful order
+- Distances between categories are not guaranteed to be equal
+- "Agree" is higher than "Disagree" but the difference is not quantifiable
+
+How to Clean Ordinal Data in Qualtrics Exports:
+- Verify that response codes match the intended order (1=Strongly Disagree through 5=Strongly Agree)
+- Check for reverse-coded items and recode them (e.g., if 1=Strongly Agree, recode to 5)
+- Handle missing responses: decide between listwise deletion, pairwise deletion, or imputation
+- Recode text responses to numerical values if not already coded
+- Example Excel formula for recoding: =IF(A2="Strongly Disagree",1,IF(A2="Disagree",2,IF(A2="Neutral",3,IF(A2="Agree",4,IF(A2="Strongly Agree",5,"")))))
+
+Appropriate Statistical Analyses for Ordinal Data:
+- Frequency distribution
+- Median and mode
+- Percentiles and quartiles
+- Mann-Whitney U test (non-parametric alternative to t-test)
+- Wilcoxon signed-rank test (paired comparison)
+- Kruskal-Wallis test (non-parametric alternative to ANOVA)
+- Spearman rank correlation
+- Kendall's tau
+- Cross-tabulation with chi-square
+
+Note on Likert Scales:
+Many researchers treat 5-point and 7-point Likert scales as interval data when conducting analysis such as computing means and running t-tests or ANOVA. This is common practice in marketing research but should be noted as an assumption. When Likert items are combined into a composite scale (summated rating scale), the resulting scale is more commonly treated as interval.
+
+NOT Appropriate for Ordinal Data (strictly):
+- Arithmetic mean (controversial; see note above)
+- Standard deviation (controversial; see note above)
+- Pearson correlation (use Spearman instead)
+- Parametric tests without careful justification
+
+
+3. INTERVAL SCALE
+------------------
+Definition: An interval scale has ordered categories with equal intervals between values, but no true zero point. The zero is arbitrary.
+
+Examples in Marketing Research:
+- Temperature scales (Fahrenheit, Celsius)
+- Likert scale composites (when treated as interval after summation)
+- Semantic differential scales (e.g., rate on a scale from 1 to 7 where 1=Bad and 7=Good)
+- Year of birth / calendar dates
+- Standardized test scores (SAT, GRE)
+- Attitude indices computed from multiple Likert items
+
+Properties:
+- Equal intervals between values
+- Addition and subtraction are meaningful
+- Ratios are NOT meaningful (80 degrees F is not "twice as hot" as 40 degrees F)
+- No true zero point
+
+How to Clean Interval Data:
+- Check for out-of-range values (e.g., a 1-7 scale with a value of 8 or 0)
+- Identify outliers using the IQR method or z-scores
+- Standardize or normalize if comparing across different scales
+- Check for normality using histograms or Shapiro-Wilk test
+- Handle missing data: mean imputation, regression imputation, or deletion
+
+Appropriate Statistical Analyses for Interval Data:
+- Mean and standard deviation
+- Pearson correlation coefficient
+- Independent samples t-test (compare two group means)
+- Paired samples t-test (compare means before/after)
+- One-way ANOVA (compare means across 3+ groups)
+- Two-way ANOVA (examine main effects and interactions)
+- Linear regression
+- Factor analysis
+- Reliability analysis (Cronbach's alpha)
+- Cluster analysis
+
+Excel Tools for Interval Data:
+- Data Analysis ToolPak: Descriptive Statistics, t-Test, ANOVA, Correlation, Regression
+- Functions: AVERAGE(), STDEV(), CORREL(), T.TEST(), F.TEST()
+- Pivot Tables for group comparisons
+
+
+4. RATIO SCALE
+---------------
+Definition: A ratio scale has all properties of an interval scale plus a true zero point, making ratios meaningful.
+
+Examples in Marketing Research:
+- Age (in years)
+- Income (in dollars)
+- Number of purchases
+- Amount spent
+- Time spent on website (in seconds/minutes)
+- Distance traveled to store
+- Number of brand mentions on social media
+- Survey duration (in seconds)
+- Household size
+- Weight, height
+
+Properties:
+- True zero point (zero means absence of the quantity)
+- Ratios are meaningful (someone who spent $100 spent twice as much as someone who spent $50)
+- All mathematical operations are valid
+
+How to Clean Ratio Data:
+- Check for negative values where none should exist (e.g., negative age)
+- Check for impossible values (e.g., age = 200)
+- Identify and handle outliers
+- Check for zero values that might indicate missing data
+- Log-transform highly skewed variables if needed for parametric tests
+- Check for normality
+
+Appropriate Statistical Analyses for Ratio Data:
+- All analyses valid for interval data, PLUS:
+- Geometric mean
+- Coefficient of variation
+- Ratio comparisons
+- All parametric and non-parametric tests
+
+
+5. SUMMARY TABLE: SCALE TYPES AND APPROPRIATE ANALYSES
+--------------------------------------------------------
+
+Scale Type | Central Tendency | Dispersion | Association | Group Comparison
+Nominal    | Mode            | Frequency  | Chi-square, Cramer's V | Chi-square test
+Ordinal    | Median, Mode    | Range, IQR | Spearman rho, Kendall tau | Mann-Whitney, Kruskal-Wallis
+Interval   | Mean, Median    | Std Dev, Variance | Pearson r | t-test, ANOVA
+Ratio      | Mean, Median    | Std Dev, Variance, CV | Pearson r | t-test, ANOVA
+
+Scale Type | Regression          | Factor Analysis | Reliability
+Nominal    | Only if dummy coded | No              | No
+Ordinal    | Ordinal regression  | Exploratory only| Cronbach alpha (if treated as interval)
+Interval   | Linear regression   | Yes             | Cronbach alpha
+Ratio      | Linear regression   | Yes             | Cronbach alpha
+
+
+6. CHOOSING THE RIGHT ANALYSIS FOR YOUR MRP (Marketing Research Project)
+-------------------------------------------------------------------------
+
+Step 1: Identify your research questions and hypotheses.
+Step 2: Identify the scale type of each variable involved.
+Step 3: Determine if you are examining:
+  - One variable (univariate): Use descriptive statistics appropriate to the scale
+  - Two variables (bivariate): Use association/comparison tests appropriate to both scales
+  - Multiple variables (multivariate): Use regression, factor analysis, or cluster analysis
+
+Common MRP Analysis Scenarios:
+
+Scenario A: "Is there a difference in satisfaction between males and females?"
+- IV: Gender (Nominal)
+- DV: Satisfaction (Ordinal/Interval)
+- If treating satisfaction as interval: Independent samples t-test
+- If treating satisfaction as ordinal: Mann-Whitney U test
+- Excel: Data > Data Analysis > t-Test: Two-Sample Assuming Unequal Variances
+
+Scenario B: "Is there a relationship between age and purchase amount?"
+- Both variables are Ratio
+- Use: Pearson correlation, scatter plot, simple linear regression
+- Excel: Data > Data Analysis > Correlation, or Data > Data Analysis > Regression
+
+Scenario C: "Is there an association between gender and brand preference?"
+- Both variables are Nominal
+- Use: Cross-tabulation with chi-square test
+- Excel: Create a Pivot Table, then manually calculate chi-square or use add-in
+
+Scenario D: "Do satisfaction scores differ across 4 brand groups?"
+- IV: Brand group (Nominal with 4 categories)
+- DV: Satisfaction (Interval)
+- Use: One-way ANOVA, followed by post-hoc tests (Tukey HSD)
+- Excel: Data > Data Analysis > Anova: Single Factor
+
+Scenario E: "What factors drive purchase intention?"
+- DV: Purchase intention (Interval)
+- IVs: Multiple (various scales, dummy-code nominal)
+- Use: Multiple linear regression
+- Excel: Data > Data Analysis > Regression (include all IVs)

@@ -1,0 +1,183 @@
+MARKETING RESEARCH PROJECT (MRP) ANALYSIS GUIDE
+==================================================
+
+1. MRP ANALYSIS WORKFLOW
+-------------------------
+
+Phase 1: Data Preparation
+  1. Export data from Qualtrics as CSV.
+  2. Open in Excel and remove metadata rows (question text and import IDs).
+  3. Remove incomplete responses (Finished = 0 or Progress < 100).
+  4. Remove speeders (unreasonably short duration).
+  5. Remove preview/test responses (Status != 0).
+  6. Clean and recode variables as needed.
+  7. Create composite variables (summated scales) if applicable.
+
+Phase 2: Descriptive Analysis
+  1. Calculate frequency tables for all nominal variables.
+  2. Calculate descriptive statistics (mean, median, SD) for all interval/ratio variables.
+  3. Create visualizations: bar charts for nominal, histograms for interval/ratio.
+  4. Report sample demographics (age, gender, etc.).
+
+Phase 3: Inferential Analysis
+  1. Test hypotheses using appropriate statistical tests based on variable scale types.
+  2. Report test statistics, p-values, and effect sizes.
+  3. Create cross-tabulations for nominal variable relationships.
+
+Phase 4: Advanced Analysis (if applicable)
+  1. Regression analysis to identify key drivers.
+  2. Factor analysis to identify underlying dimensions.
+  3. Cluster analysis to segment respondents.
+
+
+2. CHOOSING THE RIGHT TEST: DECISION GUIDE
+--------------------------------------------
+
+Question: Are two categorical variables related?
+- Both Nominal: Chi-square test of independence
+- Excel: Manual calculation or CHISQ.TEST function
+- Measure of association: Cramer's V
+
+Question: Is there a difference in means between two groups?
+- IV: Nominal (2 groups), DV: Interval/Ratio
+- Use: Independent samples t-test
+- Excel: Data > Data Analysis > t-Test: Two-Sample Assuming Unequal Variances
+- Report: t-statistic, degrees of freedom, p-value, means of each group
+
+Question: Is there a difference in means across three or more groups?
+- IV: Nominal (3+ groups), DV: Interval/Ratio
+- Use: One-way ANOVA
+- Excel: Data > Data Analysis > Anova: Single Factor
+- If significant: Follow up with pairwise t-tests using Bonferroni correction
+- Report: F-statistic, degrees of freedom, p-value, group means
+
+Question: Is there a relationship between two continuous variables?
+- Both Interval or Ratio
+- Use: Pearson correlation
+- Excel: Data > Data Analysis > Correlation, or =CORREL()
+- Report: r value, p-value, sample size
+
+Question: Can I predict a continuous outcome from one or more predictors?
+- DV: Interval/Ratio, IVs: Any (dummy-code nominal)
+- Use: Multiple regression
+- Excel: Data > Data Analysis > Regression
+- Report: R-squared, F-statistic, coefficients, p-values
+
+Question: Is there a difference in rankings or ordinal responses between groups?
+- IV: Nominal (2 groups), DV: Ordinal
+- Use: Mann-Whitney U test (not in Excel ToolPak; use rank transformation + t-test as approximation)
+- Alternative: Many researchers use t-test on Likert data as an acceptable approximation
+
+Question: How many underlying dimensions exist in a set of variables?
+- Variables: Multiple interval/ratio (or Likert treated as interval)
+- Use: Factor analysis (not available in Excel ToolPak; typically done in SPSS or R)
+- In Excel: Can approximate using correlation matrix to identify clusters of highly correlated variables
+
+
+3. REPORTING RESULTS IN AN MRP
+---------------------------------
+
+For each analysis, report:
+
+Descriptive Statistics:
+- Table with: Variable, N, Mean, SD, Min, Max (for interval/ratio)
+- Table with: Variable, Category, Frequency, Percentage (for nominal/ordinal)
+
+t-Test Results:
+- "An independent samples t-test was conducted to compare [DV] between [Group 1] and [Group 2]."
+- "There was a significant difference in [DV] between [Group 1] (M = X.XX, SD = X.XX) and [Group 2] (M = X.XX, SD = X.XX); t(df) = X.XX, p = X.XXX."
+
+ANOVA Results:
+- "A one-way ANOVA was conducted to examine the effect of [IV] on [DV]."
+- "There was a statistically significant difference between groups, F(df_between, df_within) = X.XX, p = X.XXX."
+- Follow with post-hoc comparisons.
+
+Correlation Results:
+- "A Pearson correlation was computed to assess the relationship between [Var1] and [Var2]."
+- "There was a positive/negative correlation between the two variables, r(df) = X.XX, p = X.XXX."
+
+Regression Results:
+- "A multiple regression was run to predict [DV] from [IV1], [IV2], and [IV3]."
+- "The model was statistically significant, F(df_regression, df_residual) = X.XX, p < .001, R-squared = X.XX."
+- "Only [IV1] significantly predicted [DV] (B = X.XX, p = X.XXX)."
+
+
+4. COMMON MISTAKES IN MRP DATA ANALYSIS
+-----------------------------------------
+
+Mistake 1: Using mean for nominal data.
+- Example: Computing the average of Gender (coded 1=Male, 2=Female).
+- Fix: Use frequency counts and percentages for nominal variables.
+
+Mistake 2: Running a t-test with more than two groups.
+- Example: Comparing satisfaction across 4 brands using a t-test.
+- Fix: Use one-way ANOVA when comparing 3+ groups.
+
+Mistake 3: Not removing Qualtrics metadata rows.
+- The question text and import ID rows get treated as data.
+- Fix: Always delete rows 2 and 3 in the raw Qualtrics export before analysis.
+
+Mistake 4: Not checking for and removing incomplete responses.
+- Partial responses can skew results.
+- Fix: Filter by Finished = 1 or Progress = 100.
+
+Mistake 5: Forgetting to reverse-code negatively worded items before creating composite scales.
+- This deflates reliability (Cronbach's alpha) and distorts the composite.
+- Fix: Identify reverse-coded items and recode before computing the composite.
+
+Mistake 6: Including the reference category in dummy-coded regression.
+- Creates perfect multicollinearity and the regression will fail.
+- Fix: Always omit one category as the reference group.
+
+Mistake 7: Not checking data types.
+- Numbers stored as text will not work in calculations.
+- Fix: Use Data > Text to Columns > Finish, or multiply by 1.
+
+Mistake 8: Confusing correlation with causation.
+- Correlation only shows association, not cause and effect.
+- Fix: Use careful language ("associated with" not "caused by") unless you have an experimental design.
+
+Mistake 9: Ignoring assumptions of statistical tests.
+- t-test and ANOVA assume approximately normal distribution and equal variances.
+- Fix: Check histograms for normality. Use "Assuming Unequal Variances" option when in doubt.
+
+Mistake 10: Not reporting effect sizes.
+- Statistical significance alone does not indicate practical importance.
+- Fix: Report Cohen's d for t-tests, eta-squared for ANOVA, R-squared for regression.
+
+
+5. PEER EVALUATION SURVEY ANALYSIS (COMMON MRP SCENARIO)
+----------------------------------------------------------
+
+Many MRP courses include a peer evaluation component where students rate each other's group presentations.
+
+Typical Structure:
+- Each respondent rates all groups (including their own) on multiple dimensions.
+- Dimensions might include: research quality, insights, presentation delivery, actionable recommendations.
+- Ratings are typically on a 1-5 or 1-7 Likert scale (ordinal, often treated as interval).
+- Open-ended feedback is also collected.
+
+Analysis Steps:
+
+1. Remove self-ratings (respondents should not rate their own group).
+   - Filter out rows where the respondent's group number matches the group being rated.
+   - In Excel: Create a helper column: =IF(GroupNumber=RatedGroup, "SELF", "PEER")
+   - Then filter to keep only "PEER" ratings.
+
+2. Calculate mean ratings per group per dimension.
+   - Use AVERAGEIF: =AVERAGEIF(GroupColumn, "Group 1", RatingColumn)
+   - Or use a Pivot Table with Group in Rows, Dimension means in Values.
+
+3. Compare group performance:
+   - Use one-way ANOVA with Group as IV and each dimension score as DV.
+   - This tests whether there are significant differences in ratings across groups.
+
+4. Check inter-rater reliability:
+   - High agreement among raters suggests consistent evaluation.
+   - Calculate the standard deviation of ratings per group per dimension.
+   - Low SD = high agreement.
+
+5. Analyze qualitative feedback:
+   - Read through open-ended responses per group.
+   - Identify common themes (strengths and weaknesses).
+   - Report key themes with illustrative quotes.

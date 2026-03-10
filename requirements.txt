@@ -10,3 +10,4 @@ pypdf
 python-pptx
 pandas
 tabulate
+

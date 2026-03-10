@@ -4,9 +4,8 @@ agents.py — LangGraph multi-agent workflow for Marketing Research Assistant.
 Nodes:
   1. router        – keyword-based intent classifier (no LLM call)
   2. rag_retriever – fetch relevant FAISS chunks
-  3. rag_generator – answer from retrieved context only
-  4. verifier      – reject answers that go beyond the retrieved context
-  5. data_analyst  – CSV analysis: description + Excel guidance OR code execution
+  3. rag_generator – answer from retrieved context, with source citations
+  4. data_analyst  – CSV analysis: description + Excel guidance OR code execution
 """
 
 import io
@@ -25,8 +24,9 @@ from langgraph.graph import StateGraph, END
 
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 REJECTION_MSG = (
-    "I'm sorry, but that information is not covered in our marketing research "
-    "materials or course slides."
+    "I'm sorry, but that information is not covered in our MKTG 323 course "
+    "materials or slides. Please reach out to Professor Rahul Suhag directly "
+    "for further help."
 )
 
 # Safe builtins for the code execution sandbox
@@ -70,7 +70,7 @@ def get_llm(api_key: str) -> ChatGroq:
 
 
 class RateLimitError(Exception):
-    """Raised when Gemini API rate limit is exhausted after retries."""
+    """Raised when Groq API rate limit is exhausted after retries."""
     pass
 
 
@@ -88,9 +88,8 @@ def invoke_with_retry(chain, inputs, max_retries=4):
                 continue
             if is_rate_limit:
                 raise RateLimitError(
-                    "Gemini API free-tier rate limit reached. Please wait ~60 seconds "
-                    "and try again. The free tier allows 15 requests/minute and "
-                    "1,000 requests/day."
+                    "Rate limit reached. Please wait ~60 seconds and try again. "
+                    "The free tier allows 30 requests/minute and 14,400 requests/day."
                 )
             raise
     return chain.invoke(inputs)
@@ -146,22 +145,38 @@ def rag_retriever_node(state: AgentState, *, vectorstore: FAISS) -> dict:
 RAG_PROMPT = ChatPromptTemplate.from_messages([
     (
         "system",
-        "You are a Marketing Research Teaching Assistant who helps students with "
-        "concepts, data analysis methods, Excel instructions, and scale types "
-        "(nominal, ordinal, interval, ratio). Your knowledge comes EXCLUSIVELY "
-        "from the provided context excerpts.\n\n"
-        "Rules:\n"
-        "1. Answer ONLY using facts present in the context below.\n"
-        "2. If the question asks for Excel instructions, give clear, numbered "
-        "   step-by-step guidance. Include BOTH Windows and Mac instructions "
-        "   when they differ (menu paths, keyboard shortcuts, etc.).\n"
-        "3. When discussing statistical tests, always specify which scale types "
-        "   (nominal, ordinal, interval, ratio) each test is appropriate for.\n"
-        "4. If the context does not contain enough information to answer, say:\n"
+        "You are the MKTG 323 Marketing Research Teaching Assistant at "
+        "Texas A&M University, Mays Business School (Professor Rahul Suhag's class). "
+        "You help students learn marketing research concepts using the course "
+        "materials provided as context below.\n\n"
+        "YOUR CAPABILITIES:\n"
+        "1. **Explain concepts** — scales (nominal, ordinal, interval, ratio), "
+        "   comparative vs. non-comparative scales, sampling methods, research "
+        "   designs, qualitative vs. quantitative methods, constructs, survey "
+        "   design, and all topics covered in the course slides.\n"
+        "2. **Excel guidance** — Step-by-step instructions for Data Analysis "
+        "   ToolPak, descriptive statistics, t-tests, ANOVA, chi-square, "
+        "   correlation, regression. Always include BOTH Windows and Mac paths.\n"
+        "3. **Data cleaning** — Guide students on preprocessing Qualtrics survey "
+        "   exports: removing metadata rows, handling missing data, recoding "
+        "   variables, binary coding, reverse coding.\n"
+        "4. **Survey question feedback** — Help students write, improve, or "
+        "   evaluate survey questions. Identify issues like double-barreled, "
+        "   leading, double-negative, or loaded questions. Suggest proper scale "
+        "   types and response options based on course materials.\n\n"
+        "RULES:\n"
+        "1. Use the context below as your primary source. Synthesize and explain "
+        "   the information in a clear, student-friendly way.\n"
+        "2. Cite sources when possible (e.g., Session 7 — Slide 9).\n"
+        "3. Be thorough and pedagogical — treat the student as a beginner.\n"
+        "4. When discussing statistical tests, specify which scale types they "
+        "   are appropriate for.\n"
+        "5. If the context contains relevant information, ALWAYS provide a "
+        "   substantive answer by synthesizing across all context passages.\n"
+        "6. ONLY if the context truly contains NO relevant information at all, "
+        "   respond with EXACTLY this message and nothing else:\n"
         '   "{rejection}"\n'
-        "5. NEVER fabricate information or add knowledge beyond the context.\n"
-        "6. Cite which source the information comes from when possible.\n"
-        "7. Be thorough and pedagogical — treat the student as a beginner.\n\n"
+        "7. NEVER fabricate facts not supported by the context.\n\n"
         "Context:\n{context}\n",
     ),
     ("human", "{question}"),
@@ -175,51 +190,11 @@ def rag_generator_node(state: AgentState, *, llm) -> dict:
         "context": state["context_text"],
         "rejection": REJECTION_MSG,
     })
-    return {"rag_answer": result.content}
+    answer = result.content
+    return {"rag_answer": answer, "final_answer": answer}
 
 
-# 4. VERIFICATION AGENT ──────────────────────────────────────────────────────
-
-VERIFY_PROMPT = ChatPromptTemplate.from_messages([
-    (
-        "system",
-        "You are a strict Verification Agent. Your job is to compare an answer "
-        "against the provided source context and determine if the answer is "
-        "FAITHFUL to that context.\n\n"
-        "Rules:\n"
-        "1. If every major claim in the answer can be traced to or reasonably "
-        "   inferred from the context → output the answer unchanged, "
-        "   prefixed with 'PASS: '.\n"
-        "2. If the answer introduces major facts, statistics, or claims that are "
-        "   clearly NOT present in or inferable from the context → output "
-        "   EXACTLY: 'FAIL'\n"
-        "3. General formatting, transition words, logical connectors, and minor "
-        "   paraphrasing or synthesis across context passages are fine.\n"
-        "4. Only FAIL when the answer contains clearly fabricated information. "
-        "   If the answer is a reasonable synthesis of the context, PASS it.\n\n"
-        "Source Context:\n{context}\n\n"
-        "Answer to verify:\n{answer}\n",
-    ),
-    ("human", "Is this answer faithful to the context? Respond with PASS: <answer> or FAIL."),
-])
-
-
-def verifier_node(state: AgentState, *, llm) -> dict:
-    chain = VERIFY_PROMPT | llm
-    result = invoke_with_retry(chain, {
-        "context": state["context_text"],
-        "answer": state["rag_answer"],
-    })
-    verdict = result.content.strip()
-    if verdict.upper().startswith("PASS"):
-        # Strip the PASS prefix and return the cleaned answer
-        verified = re.sub(r"^PASS:\s*", "", verdict, flags=re.IGNORECASE)
-        return {"verified_answer": verified, "final_answer": verified}
-    else:
-        return {"verified_answer": REJECTION_MSG, "final_answer": REJECTION_MSG}
-
-
-# 5. DATA ANALYSIS AGENT ─────────────────────────────────────────────────────
+# 4. DATA ANALYSIS AGENT ─────────────────────────────────────────────────────
 
 def _is_transform_request(question: str) -> bool:
     """Determine if the user wants to transform/modify data (vs. describe it).
@@ -428,9 +403,6 @@ def build_graph(api_key: str, vectorstore: FAISS) -> StateGraph:
     def _generator(state):
         return rag_generator_node(state, llm=llm)
 
-    def _verifier(state):
-        return verifier_node(state, llm=llm)
-
     def _analyst(state):
         return data_analyst_node(state, llm=llm)
 
@@ -440,7 +412,6 @@ def build_graph(api_key: str, vectorstore: FAISS) -> StateGraph:
     workflow.add_node("router", _router)
     workflow.add_node("rag_retriever", _retriever)
     workflow.add_node("rag_generator", _generator)
-    workflow.add_node("verifier", _verifier)
     workflow.add_node("data_analyst", _analyst)
 
     # Entry point
@@ -456,10 +427,9 @@ def build_graph(api_key: str, vectorstore: FAISS) -> StateGraph:
         },
     )
 
-    # RAG pipeline: retriever → generator → verifier → END
+    # RAG pipeline: retriever → generator → END (no verifier — saves LLM calls)
     workflow.add_edge("rag_retriever", "rag_generator")
-    workflow.add_edge("rag_generator", "verifier")
-    workflow.add_edge("verifier", END)
+    workflow.add_edge("rag_generator", END)
 
     # Data analysis → END
     workflow.add_edge("data_analyst", END)

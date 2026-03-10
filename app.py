@@ -525,6 +525,7 @@ with tab3:
                     file_name="cleaned_data.csv",
                     mime="text/csv",
                     use_container_width=True,
+                    key="tab3_dl_top",
                 )
         with dl_col2:
             gen_codebook = st.button("📋 Generate Codebook", use_container_width=True, key="btn_codebook")
@@ -573,6 +574,18 @@ with tab3:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
+    # Persistent download button — always visible below chat when cleaned CSV is ready
+    if st.session_state.processed_csv:
+        _dl_fname = (st.session_state.csv_filename or "data").replace(".csv", "")
+        st.download_button(
+            "⬇️ Download Cleaned CSV",
+            data=st.session_state.processed_csv,
+            file_name=f"{_dl_fname}_cleaned.csv",
+            mime="text/csv",
+            use_container_width=True,
+            key="tab3_dl_bottom",
+        )
+
     if tab3_prompt := st.chat_input("Ask about your data — cleaning, recoding, analysis …", key="tab3_chat"):
         st.session_state.tab3_messages.append({"role": "user", "content": tab3_prompt})
         with st.chat_message("user"):
@@ -580,7 +593,28 @@ with tab3:
 
         with st.chat_message("assistant"):
             with st.spinner("Analyzing …"):
-                if not st.session_state.csv_data:
+                # --- Download intent detection — short-circuit LLM ---
+                _DOWNLOAD_WORDS = [
+                    "download", "give me the file", "give me the csv", "save",
+                    "export", "get file", "reshare", "re-share", "share the link",
+                    "file again", "updated csv", "cleaned csv", "final csv",
+                    "get csv", "link again", "get the link", "updated file",
+                ]
+                _is_dl_request = any(kw in tab3_prompt.lower() for kw in _DOWNLOAD_WORDS)
+                if _is_dl_request:
+                    if st.session_state.processed_csv:
+                        answer = (
+                            "✅ Your cleaned CSV is ready! Use the "
+                            "**⬇️ Download Cleaned CSV** button just above this chat."
+                        )
+                    else:
+                        answer = (
+                            "No transformed CSV is available yet. Please ask me to "
+                            "clean or recode your data first — for example: "
+                            "*'rename columns and convert Likert responses to numbers'*. "
+                            "After that step, the download button will appear automatically."
+                        )
+                elif not st.session_state.csv_data:
                     answer = "Please upload a CSV file first using the uploader above."
                 else:
                     # Reuse data_analyst_node logic

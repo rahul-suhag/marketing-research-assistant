@@ -177,7 +177,162 @@ Appropriate Statistical Analyses for Ratio Data:
 - All parametric and non-parametric tests
 
 
-5. SUMMARY TABLE: SCALE TYPES AND APPROPRIATE ANALYSES
+5. COMPARATIVE VS. NON-COMPARATIVE SCALES
+-------------------------------------------
+
+Scales used in marketing research fall into two broad families: comparative scales and non-comparative scales.
+
+5A. COMPARATIVE SCALES
+Comparative scales ask respondents to evaluate objects relative to each other. They directly compare two or more stimuli.
+
+Types of Comparative Scales:
+
+a) Paired Comparison Scale
+- Respondents choose between two objects at a time (e.g., "Do you prefer Brand A or Brand B?").
+- For n brands, the respondent makes n(n-1)/2 comparisons.
+- Useful when the number of objects is small.
+- Limitation: becomes cumbersome with many objects.
+
+b) Rank-Order Scale
+- Respondents rank a set of objects from most to least preferred (e.g., "Rank these 5 brands from 1=Most Preferred to 5=Least Preferred").
+- Produces ordinal data.
+- Forces respondents to discriminate among objects.
+- Limitation: only produces ordinal data; cannot tell how much more one item is preferred over another.
+
+c) Constant-Sum Scale
+- Respondents allocate a fixed number of points (typically 100) among several attributes or objects to indicate relative importance.
+- Example: "Allocate 100 points among the following product features based on importance: Quality ___, Price ___, Design ___, Durability ___."
+- Produces ratio-level data for the relative importance of attributes.
+- Advantage: forces respondents to make trade-offs.
+- Limitation: may be difficult for respondents if too many attributes; points must sum to the total.
+
+Comparative scales are useful when you want to understand relative preferences but they do not measure absolute attitudes.
+
+5B. NON-COMPARATIVE SCALES
+Non-comparative scales (also called monadic or metric scales) evaluate objects one at a time without direct comparison to other objects.
+
+Types of Non-Comparative Scales:
+
+a) Likert Scale
+- A summated rating scale where respondents indicate their level of agreement or disagreement with a series of statements.
+- Typically uses 5 or 7 points: Strongly Disagree, Disagree, Neither Agree nor Disagree (Neutral), Agree, Strongly Agree.
+- Each statement is called a "Likert item"; combining multiple items creates a Likert scale (composite/summated scale).
+- Scale points are the numbers assigned to each response option (e.g., 1 through 5 or 1 through 7).
+- Produces ordinal data at the item level; treated as interval when items are combined into a composite score.
+- Very widely used in marketing research for measuring attitudes, opinions, and perceptions.
+- Example: "I am satisfied with Brand X's customer service." (Strongly Disagree 1 2 3 4 5 Strongly Agree)
+
+b) Semantic Differential Scale
+- A scale anchored by bipolar adjective pairs at opposite ends.
+- Respondents mark their position on a continuum between two opposites.
+- Typically uses 7 points.
+- Only the endpoints of the scale are labeled (the bipolar adjectives).
+- Commonly used to measure attitudes, brand image, and perceptions.
+- Example: Unfriendly 1 2 3 4 5 6 7 Friendly
+- The mean for each attribute can be calculated and plotted as a profile.
+- Difference from Likert: Likert measures agreement with statements; semantic differential measures position between two opposite adjectives.
+
+c) Graphic Rating Scale (Continuous Rating Scale)
+- Respondents indicate their rating by placing a mark on a continuous line or slider between two endpoints.
+- Example: a slider from "Very Unsatisfied" to "Very Satisfied".
+- Can produce interval-level data.
+- Advantage: high granularity; respondents not forced into discrete categories.
+
+d) Behavioral Intention Scale
+- Measures respondents' likelihood of performing a future behavior.
+- Example: "How likely are you to purchase this product in the next 6 months?" (Definitely will not buy 1 2 3 4 5 Definitely will buy)
+
+Comparison: Likert vs. Constant-Sum Scale
+- Likert Scale: Measures individual agreement/disagreement with statements; each item rated independently; produces ordinal/interval data; does not require trade-offs between attributes.
+- Constant-Sum Scale: Requires allocation of a fixed total (e.g., 100 points) across attributes; forces trade-offs; produces ratio data for relative importance; compares attributes directly.
+- Key difference: Likert measures absolute attitudes per statement; constant-sum measures relative importance by forcing allocation of limited points.
+
+Comparison: Likert vs. Comparative Scale
+- Likert Scale is a non-comparative scale: each object/statement is evaluated independently, not relative to others.
+- Comparative scales (paired comparison, rank-order, constant-sum) require evaluation of objects relative to each other.
+- Key difference: Likert gives absolute attitude measurement; comparative scales reveal relative preferences and force discrimination between objects.
+
+Comparison: Likert vs. Semantic Differential
+- Both are non-comparative scales used to measure attitudes.
+- Likert uses agree/disagree response format with declarative statements.
+- Semantic differential uses bipolar adjective pairs with only endpoints labeled.
+- Likert is better for measuring agreement with specific propositions; semantic differential is better for measuring brand image or perceptions along multiple dimensions.
+
+
+6. CONSTRUCTS AND CONSTRUCT DEVELOPMENT
+-----------------------------------------
+
+A construct is a hypothetical variable made up of a set of component responses or behaviors that are thought to be related. Constructs are abstract concepts that cannot be directly observed (e.g., brand loyalty, customer satisfaction, purchase intention, perceived quality).
+
+Construct Development Process:
+1. Begin with an accurate definition of the purpose of the study.
+2. Define the construct clearly and precisely.
+3. Identify indicator variables (observable items) that reflect the construct.
+4. Develop scale items (questions) to measure each indicator.
+5. Test for reliability (Cronbach's alpha) and validity.
+
+Key points about constructs:
+- Constructs are NOT directly measured; they are inferred from multiple indicator variables.
+- Constructs are NOT directly observable; they are latent (hidden) variables.
+- A single survey question rarely captures a full construct; multiple items are needed.
+- Example: "Customer Satisfaction" might be measured by 5 Likert items covering different aspects of satisfaction.
+
+
+7. SCALE DESIGN DECISIONS
+---------------------------
+
+a) Number of Scale Points
+- Common options: 5-point, 7-point, 9-point, 10-point.
+- More points = finer discrimination but may overwhelm respondents.
+- Fewer points = easier to answer but less precision.
+
+b) Balanced vs. Unbalanced Scale
+- Balanced: Equal number of positive and negative categories (e.g., 2 negative + neutral + 2 positive = 5-point balanced).
+- Unbalanced: Unequal positive/negative categories (e.g., 1 negative + 3 positive). Can bias results.
+- Best practice: Use balanced scales for unbiased measurement.
+
+c) Forced vs. Non-Forced Scale
+- Forced: No neutral or "Don't Know" option; respondents must lean positive or negative. Even-numbered scales (e.g., 4-point or 6-point) with no midpoint are forced scales.
+- Non-forced: Includes a neutral midpoint or "Don't Know / Not Applicable" option.
+- Forced scales push respondents to take a position; non-forced scales allow genuinely neutral responses.
+- Drawback of forced scales: respondents with no real opinion may guess, producing inaccurate data.
+- Drawback of not offering "Don't Know": respondents unfamiliar with the topic may provide uninformed answers.
+
+d) Single-Item vs. Multiple-Item Scale
+- Single-item scale: Collects data about only one attribute of the object being investigated. One question measures one thing.
+- Multiple-item scale: Uses several questions to measure different facets of the same construct. More reliable and valid.
+- Example: Single-item = "Overall, how satisfied are you?" vs. Multiple-item = 5 questions covering different dimensions of satisfaction.
+
+e) Scale Descriptors
+- Labels placed at scale points to help respondents understand the meaning.
+- Can be verbal (word labels at each point), numerical (just numbers), or a combination.
+- Scale responses should be mutually exclusive (no overlapping categories).
+
+
+8. SURVEY QUESTION DESIGN PITFALLS
+-------------------------------------
+
+a) Double-Barreled Questions
+- Combine two or more attributes in one question but allow only a single answer.
+- Example (bad): "How satisfied are you with our product quality and customer service?"
+- Problem: Respondent may feel differently about quality vs. service but can only give one answer.
+
+b) Leading Questions
+- Suggest a socially desirable or expected answer.
+- Example (bad): "Don't you agree that our service is excellent?"
+- Problem: Biases responses toward agreement.
+
+c) Double Negative Questions
+- Use two negations, creating cognitive confusion.
+- Example (bad): "I would not say that the product is not worth buying."
+- Problem: Hard to interpret; respondents may misunderstand the intended meaning.
+
+d) Loaded Questions
+- Contain emotionally charged words that influence responses.
+- Example (bad): "Do you support the wasteful government spending on this program?"
+
+
+9. SUMMARY TABLE: SCALE TYPES AND APPROPRIATE ANALYSES
 --------------------------------------------------------
 
 Scale Type | Central Tendency | Dispersion | Association | Group Comparison

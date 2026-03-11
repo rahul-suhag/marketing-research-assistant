@@ -1,5 +1,5 @@
 """
-app.py — Streamlit UI for the MKTG 323 Marketing Research Contest Assistant.
+app.py — Streamlit UI for the MKTG 323 Marketing Research Assistant.
 
 4-tab layout:
   Tab 1: Ask About Class Content (RAG)
@@ -157,7 +157,7 @@ st.markdown(
         margin-bottom: 1rem;
     ">
         <div style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px;">
-            🏛️ MKTG 323 · Marketing Research Contest Assistant
+            🏛️ MKTG 323 · Marketing Research Assistant
         </div>
         <div style="font-size: 0.82rem; opacity: 0.75; margin-top: 0.2rem;">
             Professor Rahul Suhag · Mays Business School · Texas A&amp;M University

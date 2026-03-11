@@ -64,6 +64,8 @@ st.markdown("""
 [data-testid="stSidebar"] { background: #faf8f6; }
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
+[data-testid="stToolbar"] {visibility: hidden;}
+[data-testid="stDecoration"] {visibility: hidden;}
 .profile-box {
     background: #faf8f6;
     border: 1px solid #e0d6d0;

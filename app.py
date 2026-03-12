@@ -695,7 +695,7 @@ with tab3:
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab4:
-    st.caption("Enter your MRPs and upload your CSV. Get course-grounded analysis recommendations.")
+    st.caption("Enter your MRPs below for course-grounded analysis recommendations. If you already uploaded a CSV in the Clean & Code My CSV tab, it carries over automatically — no need to upload again.")
 
     # MRP input
     st.session_state.analysis_mrps = st.text_area(
@@ -714,7 +714,7 @@ with tab4:
 
     # Check for CSV
     if not st.session_state.csv_data:
-        st.info("Please upload a CSV in the **Clean & Code My CSV** tab first, or upload one here.")
+        st.info("No CSV uploaded yet. Upload one below, or go to the **Clean & Code My CSV** tab to upload and clean your data first.")
         tab4_csv = st.file_uploader(
             "Or upload CSV here:",
             type=["csv"],

@@ -1,0 +1,13 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # runs every day at 12:00 UTC (7am Texas time)
+  workflow_dispatch:         # also allows manual trigger from GitHub
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit app
+        run: curl -s -o /dev/null -w "HTTP %{http_code}" https://rahulsuhag-ai.streamlit.app

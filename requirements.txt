@@ -10,4 +10,5 @@ pypdf
 python-pptx
 pandas
 tabulate
+python-docx
 

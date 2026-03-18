@@ -14,7 +14,9 @@ Professor Rahul Suhag
 import streamlit as st
 import pandas as pd
 import io
+import re
 from pathlib import Path
+from docx import Document
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -240,6 +242,43 @@ with tab1:
         st.session_state.tab1_messages.append({"role": "assistant", "content": answer})
 
 
+# ── Survey helper functions ───────────────────────────────────────────────────
+
+def _extract_survey_text(file_bytes: bytes, filename: str) -> str:
+    """Extract plain text from an uploaded .docx or .txt survey file."""
+    if filename.lower().endswith(".docx"):
+        doc = Document(io.BytesIO(file_bytes))
+        return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+    else:  # .txt
+        return file_bytes.decode("utf-8", errors="replace")
+
+
+def _truncate_to_n_questions(text: str, max_q: int = 20) -> tuple[str, int]:
+    """
+    Split survey text into numbered questions and return the first max_q.
+    Returns (truncated_text, total_questions_found).
+    Detects patterns like: Q1., 1., 1), Q1:
+    """
+    pattern = re.compile(r'(?m)^(?:Q\s*)?(\d+)[.):\s]', re.IGNORECASE)
+    matches = list(pattern.finditer(text))
+    total = len(matches)
+    if total <= max_q or not matches:
+        return text, total
+    cutoff = matches[max_q].start()
+    return text[:cutoff].strip(), total
+
+
+def _create_docx_bytes(text: str, title: str = "Survey Draft") -> bytes:
+    """Convert plain-text survey draft to a .docx file and return as bytes."""
+    doc = Document()
+    doc.add_heading(title, level=0)
+    for line in text.split("\n"):
+        doc.add_paragraph(line)
+    buf = io.BytesIO()
+    doc.save(buf)
+    return buf.getvalue()
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — BUILD MY SURVEY
 # ══════════════════════════════════════════════════════════════════════════════
@@ -311,7 +350,45 @@ with tab2:
                 file_name="synthetic_survey_data.csv",
                 mime="text/csv",
                 use_container_width=True,
+                key="tab2_dl_synthetic",
             )
+
+        # Download survey draft as Word doc
+        if st.session_state.survey_draft:
+            st.download_button(
+                "⬇️ Download Survey Draft (.docx)",
+                data=_create_docx_bytes(st.session_state.survey_draft),
+                file_name="survey_draft.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+                key="tab2_dl_docx",
+            )
+
+        # ── Upload existing Qualtrics survey for review ───────────────────────
+        st.divider()
+        st.markdown("##### 📤 Upload Existing Survey for Review")
+        st.caption(
+            "Upload questions from your Qualtrics survey (.docx or .txt export). "
+            "**Upload one MRP section at a time — no more than 20 questions per upload.** "
+            "The questions will load into the draft area so you can use Review, Pretest, and Sample Data."
+        )
+        uploaded_survey = st.file_uploader(
+            "Select survey file (.docx or .txt)",
+            type=["docx", "txt"],
+            key="tab2_survey_upload",
+        )
+        if uploaded_survey is not None:
+            raw_text = _extract_survey_text(uploaded_survey.read(), uploaded_survey.name)
+            truncated, total_found = _truncate_to_n_questions(raw_text, max_q=20)
+            if total_found > 20:
+                st.warning(
+                    f"⚠️ {total_found} questions detected. Only the first 20 have been loaded. "
+                    "Upload the next section separately to review more."
+                )
+            if st.button("Load into Draft →", key="btn_load_survey", use_container_width=True):
+                st.session_state.survey_draft = truncated
+                st.success("✅ Survey loaded into draft. Use Review, Pretest, or Sample Data above.")
+                st.rerun()
 
     with right_col:
         st.markdown("#### Survey Chat")

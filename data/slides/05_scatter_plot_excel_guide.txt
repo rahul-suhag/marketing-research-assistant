@@ -1,0 +1,194 @@
+CREATING SCATTER PLOTS IN EXCEL — MKTG 323 Guide
+=================================================
+Companion to Session 10 (Correlation) and the Excel Analysis ToolPak Guide.
+Use a scatter plot BEFORE running the correlation — it lets you visually confirm
+the relationship is linear (a requirement for Pearson r).
+
+Scale requirement: Both variables must be interval or ratio.
+Examples from class:
+  - Customer satisfaction (1–7) vs. likelihood to recommend (1–7)
+  - Price sensitivity score vs. brand loyalty score
+  - Social media usage hours vs. purchase intention rating
+
+================================================================================
+PART 1 — CREATE A BASIC SCATTER PLOT
+================================================================================
+
+STEP 1 — ARRANGE YOUR DATA
+  - Put Variable X (your predictor / independent variable) in one column
+  - Put Variable Y (your outcome / dependent variable) in the ADJACENT column to the right
+  - Include a header row (e.g., "Satisfaction" in A1, "Likelihood to Recommend" in B1)
+  - Data rows below: A2:B26 for 25 respondents, etc.
+
+  Example layout:
+      A              B
+  1   Satisfaction   Likelihood_Recommend
+  2   5              6
+  3   3              4
+  4   7              7
+  ...
+
+  IMPORTANT: Excel reads the LEFT column as X-axis and RIGHT column as Y-axis.
+  Swap column order if your axes come out reversed.
+
+STEP 2 — SELECT YOUR DATA
+  - Click the header of the X column (e.g., A1)
+  - Hold Shift and click the last cell of the Y column (e.g., B26)
+  - Both columns should now be highlighted (including headers)
+
+STEP 3 — INSERT THE SCATTER PLOT
+
+  Windows:
+    1. Click the Insert tab in the ribbon
+    2. In the Charts group, click the Scatter icon (looks like dots)
+    3. Select "Scatter" (first option — plain dots, no lines)
+    4. A chart appears on your worksheet
+
+  Mac:
+    1. Click the Insert tab in the ribbon (or Insert menu)
+    2. Click Chart (or look for the Scatter icon in Charts group)
+    3. In the chart chooser, select XY (Scatter) on the left
+    4. Select the first sub-type: "Scatter with only markers"
+    5. Click Insert (or OK)
+
+STEP 4 — CHECK YOUR AXES
+  - X-axis (horizontal) should show your predictor variable (e.g., Satisfaction)
+  - Y-axis (vertical) should show your outcome variable (e.g., Likelihood to Recommend)
+  - If reversed, right-click the chart → Select Data → swap Series X and Y values
+
+================================================================================
+PART 2 — FORMAT THE CHART (REQUIRED FOR REPORTS)
+================================================================================
+
+ADD AXIS TITLES:
+
+  Windows:
+    1. Click on the chart to select it
+    2. Click the green "+" (Chart Elements) button that appears top-right of chart
+    3. Check "Axis Titles"
+    4. Click on the horizontal axis title text box → type your X variable name
+       (e.g., "Customer Satisfaction (1–7)")
+    5. Click on the vertical axis title text box → type your Y variable name
+       (e.g., "Likelihood to Recommend (1–7)")
+
+  Mac:
+    1. Click on the chart to select it
+    2. Click Chart Design tab in the ribbon (appears when chart is selected)
+    3. Click "Add Chart Element" → "Axis Titles"
+    4. Add Primary Horizontal and Primary Vertical titles
+    5. Click each title box to type the variable names
+
+ADD A CHART TITLE:
+  - Click on "Chart Title" at the top of the chart
+  - Type a descriptive title:
+    Example: "Scatter Plot: Customer Satisfaction vs. Likelihood to Recommend"
+
+RESIZE THE CHART:
+  - Click and drag the corner handles to make the chart larger
+  - A larger chart makes the pattern of dots easier to read
+
+================================================================================
+PART 3 — ADD A TRENDLINE (LINEAR)
+================================================================================
+
+A trendline helps you visually see the direction and fit of the relationship.
+Add it AFTER you have already created and labeled your scatter plot.
+
+  Windows:
+    1. Click on any data point dot in the chart
+    2. Right-click → "Add Trendline..."
+    3. In the Format Trendline panel (right side):
+       - Select "Linear" (should be default)
+       - Check "Display R-squared value on chart"
+       - (Optional) Check "Display Equation on chart"
+    4. Click the X to close the panel
+
+  Mac:
+    1. Click on any data point dot in the chart
+    2. Right-click (or Control+click) → "Add Trendline..."
+    3. In the Format Trendline dialog:
+       - Select "Linear"
+       - Check "Display R-squared value on chart"
+    4. Click OK
+
+INTERPRETING THE TRENDLINE:
+  - Upward slope → positive relationship (as X increases, Y tends to increase)
+  - Downward slope → negative relationship (as X increases, Y tends to decrease)
+  - Flat slope → little to no linear relationship
+  - R² on chart = r² (square of the Pearson r from your ToolPak correlation)
+    Example: If ToolPak gives r = 0.78, the trendline R² ≈ 0.61
+
+================================================================================
+PART 4 — INTERPRETING THE SCATTER PLOT
+================================================================================
+
+BEFORE running the Pearson correlation from the ToolPak, look at your scatter
+plot and ask:
+
+1. IS THE RELATIONSHIP LINEAR?
+   - Dots should form a rough straight-line pattern (up-right or down-right)
+   - If the dots form a curve (U-shape, J-shape), Pearson r is NOT appropriate
+   - Pearson r only measures LINEAR relationships
+
+2. DIRECTION:
+   - Dots trending up-right = positive relationship
+   - Dots trending down-right = negative relationship
+
+3. STRENGTH:
+   - Dots clustered tightly around the trendline = strong relationship (r close to ±1)
+   - Dots spread widely around the trendline = weak relationship (r close to 0)
+
+4. OUTLIERS:
+   - Single dots far away from the cluster can distort the correlation
+   - Note any obvious outliers in your write-up
+
+WHAT TO WRITE IN YOUR REPORT:
+  "A scatter plot of [X variable] vs. [Y variable] suggests a [positive/negative],
+  [strong/moderate/weak] linear relationship. The data points follow a roughly
+  linear pattern, supporting the use of Pearson correlation."
+
+================================================================================
+PART 5 — RUNNING THE CORRELATION AFTER THE SCATTER PLOT
+================================================================================
+
+Once you have confirmed the relationship looks linear in the scatter plot:
+
+1. Click Data → Data Analysis → Correlation → OK
+2. Input Range: select both variable columns including headers (e.g., A1:B26)
+3. Check "Labels in First Row"
+4. Output Range: select an empty cell
+5. Click OK
+
+The output shows Pearson r.
+  r = +0.70 to +1.00 → strong positive (your scatter plot should show tight upward cluster)
+  r = +0.40 to +0.69 → moderate positive
+  r = +0.10 to +0.39 → weak positive
+  r = -0.10 to -0.39 → weak negative
+  r = -0.40 to -0.69 → moderate negative
+  r = -0.70 to -1.00 → strong negative
+
+To get the p-value (not in ToolPak output):
+  =T.DIST.2T(ABS(r * SQRT((n-2)/(1-r^2))), n-2)
+  Replace r with your correlation value, n with number of data rows.
+
+  If p < 0.05 → the correlation is statistically significant.
+
+================================================================================
+COMMON MISTAKES TO AVOID
+================================================================================
+
+- Using ordinal data (e.g., Likert items treated as ranks): technically requires
+  Spearman, but in MKTG 323 we treat 5+ point Likert scales as interval for
+  Pearson correlation (accepted practice in marketing research)
+
+- Not checking the scatter plot first: always visualize before computing r
+
+- Confusing correlation with causation: r tells you two variables move together,
+  not that one causes the other
+
+- Reversing X and Y axes: the predictor goes on the X-axis (horizontal)
+
+- Forgetting to label axes and add a title: always required in reports
+
+- Running correlation on nominal/categorical data (e.g., gender coded 1/2):
+  use chi-square for categorical variables, not correlation
